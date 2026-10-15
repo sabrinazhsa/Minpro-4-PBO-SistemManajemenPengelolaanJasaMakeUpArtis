@@ -23,7 +23,7 @@ Packages ini berisi class `JasaMakeUpArtis` yang menjadi class utama untuk menja
 
 2. Model
 
-Pada packages ini berisi class `Pelanggan` yang mengelola keseluruhan data pelanggan, `PemesananLayananMUA` yang menjadi superclass sebagai tempat pemesanan dengan kategori umum, `MakeUpWisuda` yang menjadi subclass untuk menyimpan data khusus make up wisuda, `MakeUpPengantin` yang menjadi subclass juga untuk menyimpan data khusus make up pengantin, dan `UntukDiskon` yang menjadi _interface_ sebagai tempat untuk mendefinisikan perhitungan diskon pada layanan jasa make up ini. Packages model ini memiliki fungsi untuk menyimpan data dari masing-masing class tanpa mencampuri tampilan program.
+Pada packages ini berisi class `Pelanggan` yang mengelola keseluruhan data pelanggan, class `PemesananLayananMUA` yang menjadi superclass sebagai tempat pemesanan dengan kategori umum, class `MakeUpWisuda` yang menjadi subclass untuk menyimpan data khusus make up wisuda, class `MakeUpPengantin` yang menjadi subclass juga untuk menyimpan data khusus make up pengantin, class `UntukDiskon` yang menjadi _interface_ sebagai tempat untuk mendefinisikan perhitungan diskon pada layanan jasa make up ini, dan class `PemesananDAO` sebagai tempat untuk menangani query SQL langsung ke database. Packages model ini memiliki fungsi untuk menyimpan data dari masing-masing class tanpa mencampuri tampilan program.
 
 3. View
 
