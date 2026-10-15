@@ -4,13 +4,15 @@
  */
 package controller;
 
-import java.util.ArrayList;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.List;
 import model.Pelanggan;
 import model.PemesananLayananMUA;
 import model.MakeUpPengantin;
 import model.MakeUpWisuda;
+import model.PemesananDAO;
+import java.sql.SQLException;
 
 /**
  *
@@ -18,22 +20,15 @@ import model.MakeUpWisuda;
  */
 public class LayananCRUD {
 
-    private final ArrayList<PemesananLayananMUA> daftarPesanan = new ArrayList<>();
-    private int counterId = 1;
- 
-    public LayananCRUD() {
-        tampilDataAwal();
-    }
- 
-    private void tampilDataAwal() {
-        Pelanggan pelanggan1 = new Pelanggan("Madison Brr", "Jl. Melati No. 10, Samarinda", "081234567890");
-        PemesananLayananMUA pesanan1 = new MakeUpWisuda(generateIdPesanan(), "20/09/2026", "Lunas", pelanggan1, 1, true);
-        
-        daftarPesanan.add(pesanan1);
- 
-    }
+    private final PemesananDAO model = new PemesananDAO();
+
     public String generateIdPesanan() {
-        return "P0" + String.format("%01d", counterId++);
+        try {
+            return model.generateIdBaru();
+        } catch (SQLException e) {
+            tampilkanError("Membuat ID pesanan", e);
+            return null;        
+        }
     }
     
     public void tambahPemesanan(PemesananLayananMUA pesanan) {
@@ -42,30 +37,41 @@ public class LayananCRUD {
             return;
         }
 
-        if (cariPemesanan(pesanan.getIdPesanan()) != null) {
-            System.out.println("ID Pesanan [" + pesanan.getIdPesanan() + "] sudah digunakan. Gunakan ID lain!");
-            return;
-        }
-
-        daftarPesanan.add(pesanan);
-        System.out.println("Pesanan dengan ID [" + pesanan.getIdPesanan() + "] berhasil ditambahkan!");
+        try {
+            if (model.cariById(pesanan.getIdPesanan()) != null) {
+                System.out.println("ID Pesanan [" + pesanan.getIdPesanan() + "] sudah digunakan. Gunakan ID lain!");
+                return;
+            }
+            model.tambah(pesanan);
+            System.out.println("Pesanan dengan ID [" + pesanan.getIdPesanan() + "] berhasil ditambahkan!");
+        } catch (SQLException e) {
+            tampilkanError("Menyimpan pesanan", e);
+        }   
     }
 
     public void tampilkanSemuaPemesanan() {
-    if (daftarPesanan.isEmpty()) {
-        System.out.println("Belum ada pemesanan yang masuk.");
-        return;
-    }
-
-    NumberFormat formatRupiah = NumberFormat.getNumberInstance(new Locale("in", "ID"));
-
-    System.out.println("\n--- DAFTAR PESANAN ---");
-
-    for (int i = 0; i < daftarPesanan.size(); i++) {
-
-        PemesananLayananMUA p = daftarPesanan.get(i);
-        Pelanggan pelanggan = p.getPelanggan();
-        
+        List<PemesananLayananMUA> daftarPesanan;
+        try {
+            daftarPesanan = model.ambilSemua();
+        } catch (SQLException e) {
+            tampilkanError("Mengambil data pesanan", e);
+            return;
+        }
+ 
+        if (daftarPesanan.isEmpty()) {
+            System.out.println("Belum ada pesanan yang masuk.");
+            return;
+        }
+ 
+        NumberFormat formatRupiah = NumberFormat.getNumberInstance(new Locale("in", "ID"));
+ 
+        System.out.println("\n--- DAFTAR PESANAN ---");
+ 
+        for (int i = 0; i < daftarPesanan.size(); i++) {
+ 
+            PemesananLayananMUA p = daftarPesanan.get(i);
+            Pelanggan pelanggan = p.getPelanggan();
+         
         System.out.println("   -----------------------------------------------------------------");
         System.out.println((i + 1) + ". ID Pesanan          : " + p.getIdPesanan());
         System.out.println("   Nama Pelanggan      : " + pelanggan.getNamaPelanggan());
@@ -79,41 +85,56 @@ public class LayananCRUD {
     }
 }
 
-    public PemesananLayananMUA cariPemesanan(String getIdPesanan) {
-        if (getIdPesanan == null) {
+    public PemesananLayananMUA cariPemesanan(String idPesananCari) {
+        if (idPesananCari == null) {
             return null;
         }
-        for (PemesananLayananMUA p : daftarPesanan) {
-            if (p.getIdPesanan().equals(getIdPesanan)) {
-                return p;
-            }
+        try {
+            return model.cariById(idPesananCari);
+        } catch (SQLException e) {
+            tampilkanError("Mencari pesanan", e);
+            return null;
         }
-        return null;
     }
 
-    public void updatePemesanan(String getIdPesanan, String statusBaru) {
-        PemesananLayananMUA p = cariPemesanan(getIdPesanan);
+    public void updatePemesanan(String idPesananCari, String statusBaru) {
+        PemesananLayananMUA p = cariPemesanan(idPesananCari);
 
         if (p == null) {
-            System.out.println("Pesanan dengan ID [" + getIdPesanan + "] tidak ditemukan.");
+            System.out.println("Pesanan dengan ID [" + idPesananCari + "] tidak ditemukan.");
             return;
         }
         if (statusBaru == null || statusBaru.trim().isEmpty()) {
         System.out.println("Tidak ada perubahan, status tetap \"" + p.getStatus() + "\".");
         return;
     }
-        p.setStatus(statusBaru);
-        System.out.println("Data pesanan [" + getIdPesanan + "] berhasil diperbarui!");
+        try {
+            boolean berhasil = model.updateStatus(idPesananCari, statusBaru);
+            if (berhasil) {
+                System.out.println("Status pesanan [" + idPesananCari + "] berhasil diperbarui menjadi \"" + statusBaru + "\"!");
+            } else {
+                System.out.println("Pesanan dengan ID [" + idPesananCari + "] tidak ditemukan.");
+            }
+        } catch (SQLException e) {
+            tampilkanError("Mengubah status pesanan", e);
+        }
     }
 
     public void hapusPemesanan(String idPesananCari) {
-        boolean berhasil = daftarPesanan.removeIf(p -> p.getIdPesanan().equals(idPesananCari));
-        if (berhasil) {
-            System.out.println("Pesanan [" + idPesananCari + "] berhasil dihapus!");
-        } else {
-            System.out.println("Pesanan dengan ID [" + idPesananCari + "] tidak ada!!!");
-            
+         try {
+            boolean berhasil = model.hapus(idPesananCari);
+            if (berhasil) {
+                System.out.println("Pesanan [" + idPesananCari + "] berhasil dihapus!");
+            } else {
+                System.out.println("Pesanan dengan ID [" + idPesananCari + "] tidak ada!!!");
+            }
+        } catch (SQLException e) {
+            tampilkanError("Menghapus pesanan", e);
         }
-        
+    }
+ 
+    private void tampilkanError(String aksi, SQLException e) {
+        System.out.println("Gagal " + aksi + ". Terjadi kesalahan database: " + e.getMessage());
     }
 }
+ 

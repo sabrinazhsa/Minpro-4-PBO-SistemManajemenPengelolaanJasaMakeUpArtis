@@ -11,7 +11,7 @@ package model;
 
 public class MakeUpPengantin extends PemesananLayananMUA {
  
-    private static final double hargaPerSesi = 1000000;
+    private static final double hargaPerSesi = 500000;
     private static final double hargaSanggul = 200000;
  
     private int jumlahSesiRias;
@@ -33,6 +33,7 @@ public class MakeUpPengantin extends PemesananLayananMUA {
         }
         return total;
     }
+    
  
     @Override
     public void tampilkanDetailPesanan() {

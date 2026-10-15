@@ -74,8 +74,6 @@ public abstract class PemesananLayananMUA implements UntukDiskon {
         return pelanggan; 
     }
 
-    
-    @Override
     public double hitungTotalBiaya(double diskonPersen) {
         if (diskonPersen < 0 || diskonPersen > 100) {
             System.out.println("Diskon tidak valid, dianggap 0%.");
